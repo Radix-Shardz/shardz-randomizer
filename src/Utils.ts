@@ -46,7 +46,7 @@ export function shardz_badge() {
       break;
     }
     case NetworkId.Stokenet: {
-      str = process.env.STOKENET_SHARDZ_BADGE;
+      str = process.env.STOKENET_SHARDZ_ADMIN_BADGE;
       break;
     }
     default: {
@@ -68,7 +68,7 @@ export function shardz_ticket_address() {
       break;
     }
     case NetworkId.Stokenet: {
-      str = process.env.STOKENET_TICKET_ADDRESS;
+      str = process.env.STOKENET_SHARDZ_TICKET_ADDRESS;
       break;
     }
     default: {

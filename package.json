@@ -19,9 +19,10 @@
   },
   "homepage": "https://github.com/Radix-Shardz/backend-randomizer#readme",
   "dependencies": {
-    "@beaker-tools/typescript-toolkit": "^1.0.0",
+    "@beaker-tools/typescript-toolkit": "^1.0.6",
     "@radixdlt/babylon-gateway-api-sdk": "^1.2.7",
     "@radixdlt/radix-engine-toolkit": "^1.0.3",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "radix-ts-toolkit": "^1.2.0"

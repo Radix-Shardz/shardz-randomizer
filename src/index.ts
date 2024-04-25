@@ -1,5 +1,6 @@
 import express from "express";
 import { config } from "dotenv";
+import cors from "cors";
 import {
   account_address,
   gateway_url,
@@ -26,7 +27,7 @@ config();
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb" }));
-
+app.use(cors());
 export const gatewayApi = GatewayApiClient.initialize({
   basePath: gateway_url(),
   applicationName: "Shardz Randomizer",
@@ -47,6 +48,10 @@ async function launch() {
 
 app.listen(process.env.PORT, launch);
 
+app.get("/", async (_req, res) => {
+  return res.json("Radix Shardz backend api. Documentation coming soon!");
+});
+
 app.post("/processRandomMint", async (req) => {
   try {
     let input = req.body as ProcessRandomMintRequest;
@@ -64,36 +69,33 @@ app.post("/processRandomMint", async (req) => {
       return shard_type && shard_type === "None";
     });
 
-    let update_string = "";
+    if (to_process.length > 0) {
+      let update_string = "";
 
-    to_process.forEach((item) => {
-      const shard = `
-      Enum<1u8>(
-        Enum<${randomShard()}u8>()
-    )`;
-      update_string += `
-      ${callMethod("update_non_fungible_data", shardz_ticket_address(), [`NonFungibleLocalId("${item.id}")`, shard])}`;
-    });
+      to_process.forEach((item) => {
+        const shard = `Enum<1u8>(Enum<${randomShard()}u8>())`;
+        update_string += `
+      ${callMethod("update_non_fungible_data", shardz_ticket_address(), [`NonFungibleLocalId("${item.id}")`, `"shard_type"`, shard])}`;
+      });
 
-    let string_manifest = `
-      ${lockFee(account_address(), 1)}
+      let string_manifest = `
+      ${lockFee(account_address(), 20)}
       
       ${createProofOfAmount(account_address(), shardz_badge(), 1)}
       
       ${update_string}
     `;
 
-    await gatewayProcessor.submitRawManifest(
-      string_manifest,
-      network_id(),
-      getPrivateKey(),
-    );
+      await gatewayProcessor.submitRawManifest(
+        string_manifest,
+        network_id(),
+        getPrivateKey(),
+      );
 
-    try {
-    } catch (internal_error) {
-      throw new InternalServerError("Request failed with error ");
+      return;
     }
   } catch (bad_request_err) {
-    throw new BadRequestError("Request type is wrong");
+    //throw new BadRequestError("Request type is wrong");
+    throw bad_request_err;
   }
 });

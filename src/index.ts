@@ -13,13 +13,14 @@ import {
 } from "./Utils";
 import { LTSRadixEngineToolkit } from "@radixdlt/radix-engine-toolkit";
 import { GatewayApiClient } from "@radixdlt/babylon-gateway-api-sdk";
-import { BadRequestError, InternalServerError } from "./Error";
 import { ProcessRandomMintRequest } from "./Types";
 import {
+  addressFrom,
   callMethod,
   createProofOfAmount,
   GatewayProcessor,
   lockFee,
+  proofToArg,
 } from "@beaker-tools/typescript-toolkit";
 
 config();
@@ -81,7 +82,11 @@ app.post("/processRandomMint", async (req) => {
       let string_manifest = `
       ${lockFee(account_address(), 20)}
       
-      ${createProofOfAmount(account_address(), shardz_badge(), 1)}
+      CALL_METHOD
+        ${addressFrom(account_address())}
+        "create_proof_of_non_fungibles"
+        ${addressFrom(shardz_badge())}
+        Array<NonFungibleLocalId>(NonFungibleLocalId("#0#"));
       
       ${update_string}
     `;

@@ -57,6 +57,8 @@ app.post("/processRandomMint", async (req) => {
   try {
     let input = req.body as ProcessRandomMintRequest;
 
+    write_log(`Received request to proceed random mint ${input.ids.length}.`);
+
     let non_fungible_items = await gatewayProcessor.getNonFungibleItemsFromIds(
       shardz_ticket_address(),
       input.ids,
@@ -91,13 +93,13 @@ app.post("/processRandomMint", async (req) => {
       ${update_string}
     `;
 
-      await gatewayProcessor.submitRawManifest(
+      let receipt = await gatewayProcessor.submitRawManifest(
         string_manifest,
         network_id(),
         getPrivateKey(),
       );
 
-      return;
+      return receipt.transaction_status == "CommittedSuccess" ? to_process : [];
     }
   } catch (bad_request_err) {
     //throw new BadRequestError("Request type is wrong");

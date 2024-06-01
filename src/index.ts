@@ -17,10 +17,9 @@ import { ProcessRandomMintRequest } from "./Types";
 import {
   addressFrom,
   callMethod,
-  createProofOfAmount,
   GatewayProcessor,
   lockFee,
-  proofToArg,
+  NonFungibleItem,
 } from "@beaker-tools/typescript-toolkit";
 
 config();
@@ -53,11 +52,15 @@ app.get("/", async (_req, res) => {
   return res.json("Radix Shardz backend api. Documentation coming soon!");
 });
 
-app.post("/processRandomMint", async (req) => {
+app.post("/processRandomMint", async (req, res) => {
   try {
     let input = req.body as ProcessRandomMintRequest;
 
-    write_log(`Received request to proceed random mint ${input.ids.length}.`);
+    let updated: NonFungibleItem[] = [];
+
+    write_log(
+      `Received request to proceed random mint with ${input.ids.length} items.`,
+    );
 
     let non_fungible_items = await gatewayProcessor.getNonFungibleItemsFromIds(
       shardz_ticket_address(),
@@ -73,6 +76,7 @@ app.post("/processRandomMint", async (req) => {
     });
 
     if (to_process.length > 0) {
+      write_log(`Processing ${to_process.length} items.`);
       let update_string = "";
 
       to_process.forEach((item) => {
@@ -99,8 +103,13 @@ app.post("/processRandomMint", async (req) => {
         getPrivateKey(),
       );
 
-      return receipt.transaction_status == "CommittedSuccess" ? to_process : [];
+      updated =
+        receipt.transaction_status == "CommittedSuccess" ? to_process : [];
+    } else {
+      write_log("All items have already been processed.");
     }
+
+    res.json(updated);
   } catch (bad_request_err) {
     //throw new BadRequestError("Request type is wrong");
     throw bad_request_err;

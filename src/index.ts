@@ -3,9 +3,12 @@ import { config } from "dotenv";
 import cors from "cors";
 import {
   account_address,
+  cert_path,
   gateway_url,
+  get_config,
   getPrivateKey,
   network_id,
+  privkey_path,
   randomShard,
   shardz_badge,
   shardz_ticket_address,
@@ -21,12 +24,15 @@ import {
   lockFee,
   NonFungibleItem,
 } from "@beaker-tools/typescript-toolkit";
+import * as https from "https";
+import fs from "fs";
+import * as http from "node:http";
 
 config();
 
 const app = express();
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb" }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb" }));
 app.use(cors());
 export const gatewayApi = GatewayApiClient.initialize({
   basePath: gateway_url(),
@@ -36,8 +42,6 @@ export const gatewayApi = GatewayApiClient.initialize({
 export const gatewayProcessor = new GatewayProcessor(gatewayApi);
 
 async function launch() {
-  write_log(`Listening on port ${process.env.PORT}!`);
-
   const address = await LTSRadixEngineToolkit.Derive.virtualAccountAddress(
     getPrivateKey().publicKey(),
     network_id(),
@@ -46,7 +50,27 @@ async function launch() {
   write_log(`Using account ${address}`);
 }
 
-app.listen(process.env.PORT, launch);
+if (get_config() === 1) {
+  write_log("Launching server in HTTPS config");
+  const options = {
+    key: fs.readFileSync(privkey_path()),
+    cert: fs.readFileSync(cert_path()),
+  };
+
+  https.createServer(options, app).listen(443, launch);
+
+  // Redirect http traffic
+  http.createServer((req, res) => {
+    res.writeHead(301, {
+      Location: "https://" + req.headers["host"] + req.url,
+    });
+    res.end();
+  });
+} else {
+  write_log("Launching in local config");
+  write_log(`Listening on port ${process.env.PORT}!`);
+  app.listen(process.env.PORT, launch);
+}
 
 app.get("/", async (_req, res) => {
   return res.json("Radix Shardz backend api. Documentation coming soon!");

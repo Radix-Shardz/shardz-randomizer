@@ -16,6 +16,33 @@ export function network_id() {
   }
 }
 
+export function get_config(): number {
+  let ret = process.env.CONFIG;
+  if (!ret) {
+    throw new Error("CONFIG is undefined");
+  } else {
+    return parseInt(ret);
+  }
+}
+
+export function privkey_path(): string {
+  let ret: string = process.env.PRIVKEY_PATH;
+  if (!ret) {
+    throw new Error("PRIVKEY_PATH is undefined");
+  } else {
+    return ret;
+  }
+}
+
+export function cert_path(): string {
+  let ret: string = process.env.CERT_PATH;
+  if (!ret) {
+    throw new Error("CERT_PATH is undefined");
+  } else {
+    return ret;
+  }
+}
+
 export function account_address() {
   let str: string | undefined;
   switch (network_id()) {

@@ -4,6 +4,8 @@ import cors from "cors";
 import {
   account_address,
   cert_path,
+  claim_account,
+  component_address,
   gateway_url,
   get_config,
   getPrivateKey,
@@ -111,7 +113,7 @@ app.post("/processRandomMint", async (req, res) => {
 
       let string_manifest = `
       ${lockFee(account_address(), 20)}
-      
+       
       CALL_METHOD
         ${addressFrom(account_address())}
         "create_proof_of_non_fungibles"
@@ -137,5 +139,52 @@ app.post("/processRandomMint", async (req, res) => {
   } catch (bad_request_err) {
     //throw new BadRequestError("Request type is wrong");
     throw bad_request_err;
+  }
+});
+
+app.get("/claimRoyalties", async (_, res) => {
+  write_log("Received request to claim royalties");
+
+  let state_response = await gatewayProcessor.entityDetails([
+    component_address(),
+  ]);
+
+  let state = state_response.items[0];
+
+  if (state && state.details.type == "Component") {
+    let to_claim = parseFloat(state.details.royalty_vault_balance);
+
+    if (to_claim > 0) {
+      write_log(`Found ${to_claim} XRD to claim!`);
+
+      let manifest = `
+         ${lockFee(account_address(), 20)}
+            
+        ${callMethod("create_proof_of_non_fungibles", account_address(), [addressFrom(shardz_badge()), `Array<NonFungibleLocalId>(NonFungibleLocalId("#0#"))`])}
+        
+        CLAIM_COMPONENT_ROYALTIES
+          Address("${component_address()}");
+          
+        ${callMethod("try_deposit_batch_or_abort", claim_account(), [`Expression("ENTIRE_WORKTOP")`, `None`])}
+  `;
+
+      let receipt = await gatewayProcessor.submitRawManifest(
+        manifest,
+        network_id(),
+        getPrivateKey(),
+      );
+
+      if (receipt.transaction_status == "CommittedSuccess") {
+        res.json(
+          `Transaction ${receipt.intent_hash} succeeded. Claimed ${to_claim} XRD!`,
+        );
+      } else {
+        res.json(`Transaction failed with error: ${receipt.error_message}`);
+      }
+    } else {
+      res.json("There are no royalties to claim!");
+    }
+  } else {
+    res.json("Something went wrong!");
   }
 });

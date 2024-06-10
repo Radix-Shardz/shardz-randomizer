@@ -87,6 +87,50 @@ export function shardz_badge() {
   return str;
 }
 
+export function claim_account() {
+  let str: string | undefined;
+  switch (network_id()) {
+    case NetworkId.Mainnet: {
+      str = process.env.MAINNET_CLAIM_ACCOUNT_ADDRESS;
+      break;
+    }
+    case NetworkId.Stokenet: {
+      str = process.env.STOKENET_CLAIM_ACCOUNT_ADDRESS;
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+
+  if (!str) {
+    throw new InternalServerError("Claim account address is undefined");
+  }
+  return str;
+}
+
+export function component_address() {
+  let str: string | undefined;
+  switch (network_id()) {
+    case NetworkId.Mainnet: {
+      str = process.env.MAINNET_COMPONENT_ADDRESS;
+      break;
+    }
+    case NetworkId.Stokenet: {
+      str = process.env.STOKENET_COMPONENT_ADDRESS;
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+
+  if (!str) {
+    throw new InternalServerError("Component address is undefined");
+  }
+  return str;
+}
+
 export function shardz_ticket_address() {
   let str: string | undefined;
   switch (network_id()) {

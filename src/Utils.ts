@@ -197,18 +197,23 @@ function hexPrivateKey(): string {
 }
 
 export function randomShard(): number {
-  let random = Math.random();
-  if (random <= 0.38) {
-    return 0;
-  } else if (random <= 0.66) {
-    return 1;
-  } else if (random <= 0.86) {
-    return 2;
-  } else if (random <= 0.96) {
-    return 3;
-  } else if (random <= 0.99) {
-    return 4;
-  } else {
+  let random = Math.random() * 100;
+  console.log(random);
+  if (random <= 0.1) {
+    return 7;
+  } else if (random <= 1.1) {
+    return 6;
+  } else if (random <= 4.1) {
     return 5;
+  } else if (random <= 9.1) {
+    return 4;
+  } else if (random <= 19.6) {
+    return 3;
+  } else if (random <= 38) {
+    return 2;
+  } else if (random <= 64.6) {
+    return 1;
+  } else {
+    return 0;
   }
 }

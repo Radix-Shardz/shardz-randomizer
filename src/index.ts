@@ -16,7 +16,6 @@ import {
   shardz_ticket_address,
   write_log,
 } from "./Utils";
-import { LTSRadixEngineToolkit } from "@radixdlt/radix-engine-toolkit";
 import { GatewayApiClient } from "@radixdlt/babylon-gateway-api-sdk";
 import { ProcessRandomMintRequest } from "./Types";
 import {
@@ -29,6 +28,7 @@ import {
 import * as https from "https";
 import fs from "fs";
 import * as http from "node:http";
+import { LTSRadixEngineToolkit } from "@radixdlt/radix-engine-toolkit";
 
 config();
 
@@ -112,13 +112,13 @@ app.post("/processRandomMint", async (req, res) => {
       });
 
       let string_manifest = `
-      ${lockFee(account_address(), 20)}
+      ${lockFee(account_address(), 10)}
        
       CALL_METHOD
         ${addressFrom(account_address())}
-        "create_proof_of_non_fungibles"
+        "create_proof_of_amount"
         ${addressFrom(shardz_badge())}
-        Array<NonFungibleLocalId>(NonFungibleLocalId("#0#"));
+        Decimal("1");
       
       ${update_string}
     `;
@@ -160,7 +160,7 @@ app.get("/claimRoyalties", async (_, res) => {
       let manifest = `
          ${lockFee(account_address(), 20)}
             
-        ${callMethod("create_proof_of_non_fungibles", account_address(), [addressFrom(shardz_badge()), `Array<NonFungibleLocalId>(NonFungibleLocalId("#0#"))`])}
+        ${callMethod("create_proof_of_amount", account_address(), [addressFrom(shardz_badge()), `Decimal("1")`])}
         
         CLAIM_COMPONENT_ROYALTIES
           Address("${component_address()}");

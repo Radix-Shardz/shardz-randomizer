@@ -69,7 +69,7 @@ export function shardz_badge() {
   let str: string | undefined;
   switch (network_id()) {
     case NetworkId.Mainnet: {
-      str = process.env.MAINNET_SHARDZ_BADGE;
+      str = process.env.MAINNET_SHARDZ_ADMIN_BADGE;
       break;
     }
     case NetworkId.Stokenet: {
@@ -135,7 +135,7 @@ export function shardz_ticket_address() {
   let str: string | undefined;
   switch (network_id()) {
     case NetworkId.Mainnet: {
-      str = process.env.MAINNET_TICKET_ADDRESS;
+      str = process.env.MAINNET_SHARDZ_TICKET_ADDRESS;
       break;
     }
     case NetworkId.Stokenet: {
